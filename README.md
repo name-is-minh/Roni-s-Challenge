@@ -3,12 +3,12 @@
 This project is a data-driven dashboard designed to provide valuable insights into the sales operations of Roni's Mac Bar, a local Texas business. The dashboard displays sales trends, popular items, peak hours, and other key metrics, helping the business make informed decisions based on data.
 
 ## Table of Contents
-- Features
-- Technologies Used
-- Installation
-- Usage
-- Project Structure
-- Screenshots
+- [Features](#features)
+- [Technologies Used](#technologies-used)
+- [Installation](#installation)
+- [Usage](#usage)
+- [Project Structure](#project-structure)
+- [Screenshots](#screenshots)
 
 ## Features
 - Monthly Sales Analysis: Visualizes monthly sales with average trend lines for school and non-school months.
