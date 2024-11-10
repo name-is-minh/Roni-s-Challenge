@@ -80,7 +80,27 @@ ronis-mac-bar-dashboard/ \
 │   │   ├── may_2024.csv \
 │   │   └── ... (other monthly CSV files) \
 │   └── ronis_mac_bar_dashboard.py  # Main application file \
+├── screenshots \
+│   ├── dashboard_1.png \
+│   ├── dashboard_2.png \
+│   ├── dashboard_3.png \
+|   └── insight_section.png \
 ├── requirements.txt  # List of dependencies \
 └── README.md         # Project documentation 
 
 ## Screenshots
+
+### Main Dashboard View with Monthly Sales Chart
+![Main Dashboard](screenshots/dashboard_1.png)
+
+### Top 10 Most Popular Options Chart
+![Top 10 Most Popular Options Chart](screenshots/dashboard_2.png)
+
+### Total Sales Over Time Chart
+![Total Sales Over Time Chart](screenshots/dashboard_3.png)
+
+### Average Time of Day for Business Chart
+![Average Time of Day for Business Chart](screenshots/dashboard_4.png)
+
+### Key Insight Section
+![insight section](screenshots/insight_section.png)
