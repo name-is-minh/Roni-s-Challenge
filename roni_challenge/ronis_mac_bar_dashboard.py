@@ -55,20 +55,39 @@ st.title("Roni's Mac Bar Sales Dashboard")
 # Monthly Sales
 st.subheader("Monthly Sales")
 monthly_sales = data.groupby("Month")["Order ID"].nunique().sort_index()  # Use Order ID for counting
-print(monthly_sales)
+# print(monthly_sales)
+
+# Define school months and non-school months
+school_months = ["August", "September", "October"]
+non_school_months = ["April", "May", "June", "July"]
+
+# Calculate the average sales for school and non-school months
+average_sales_school_months = monthly_sales.loc[school_months].mean()
+average_sales_non_school_months = monthly_sales.loc[non_school_months].mean()
+
 if month != "All":
     fig, ax = plt.subplots()
     monthly_sales_single = monthly_sales.loc[[month]]
     monthly_sales_single.plot(kind="bar", ax=ax)
-    # monthly_sales.plot(kind="bar", ax=ax)
     ax.set_xlabel("Month")
     ax.set_ylabel("Order ID")
+    ax.set_title(f"Monthly Sales for {month}")
     st.pyplot(fig)
+
+# When "All" months are selected, show a line chart for all months
 else:
     fig, ax = plt.subplots()
-    monthly_sales.plot(kind="line", ax=ax)
+    # monthly_sales.plot(kind="line", ax=ax)
+    monthly_sales.plot(kind="line", ax=ax, marker='o', label="Monthly Sales")
+    
+    # Add trend lines for school and non-school months
+    ax.axhline(y=average_sales_school_months, color="green", linestyle="--", label=f"Average Sales (School Months): {average_sales_school_months:.0f}")
+    ax.axhline(y=average_sales_non_school_months, color="orange", linestyle="--", label=f"Average Sales (Non-School Months): {average_sales_non_school_months:.0f}")
+    
     ax.set_xlabel("Month")
     ax.set_ylabel("Order ID")
+    ax.set_title("Monthly Sales Over Time")
+    ax.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0.)
     st.pyplot(fig)
 
 # 2. Top 10 Most Popular Items
