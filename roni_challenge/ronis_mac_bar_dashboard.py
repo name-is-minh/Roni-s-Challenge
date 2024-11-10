@@ -49,6 +49,7 @@ if month != "All":
 if day != "All":
     data = data[data["DayOfWeek"] == day]
 
+
 # Dashboard Title
 st.title("Roni's Mac Bar Sales Dashboard")
 
@@ -90,6 +91,7 @@ else:
     ax.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0.)
     st.pyplot(fig)
 
+
 # 2. Top 10 Most Popular Items
 st.subheader("Top 10 Most Popular Options")
 top_10_items = data["Modifier"].value_counts().head(10)
@@ -125,10 +127,22 @@ ax.set_xlabel("Hour")
 ax.set_ylabel("Order Count")
 st.pyplot(fig)
 
-# Additional Notes Section for Insights
-st.sidebar.header("Notes & Insights")
-st.sidebar.write("""
-    - Most popular items and trends can help Roni's Mac Bar understand customer preferences.
-    - The dashboard can be enhanced with seasonal analysis, predictive models, or other insights based on the data.
-    - Further customization and exploration are encouraged to meet the specific requirements of Roni's operations.
-""")
+# Display Key Insights
+st.sidebar.header("Key Insights")
+
+# Busiest Day of the Week
+busiest_day = data["DayOfWeek"].value_counts().idxmax()
+st.sidebar.write(f"**Busiest Day of the Week:** {busiest_day}")
+
+# Busiest Hour of the Day
+busiest_hour = int(data["Sent Date"].dt.hour.value_counts().idxmax())
+st.sidebar.write(f"**Busiest Hour of the Day:** {busiest_hour}:00:00")
+
+# Average Monthly Sales
+avg_monthly_sales = monthly_sales.mean()
+st.sidebar.write(f"**Average Monthly Sales:** ${avg_monthly_sales:.0f}")
+
+# Top Selling Modifier
+top_10_items = data["Modifier"].value_counts().head(10)
+top_modifier = top_10_items.idxmax()
+st.sidebar.write(f"**Top Selling Modifier:** {top_modifier}")
