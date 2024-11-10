@@ -1,9 +1,9 @@
 import streamlit as st
 import pandas as pd
-import matplotlib.pyplot as plt
+import plotly.express as px
+import plotly.graph_objects as go
 import seaborn as sns
 import matplotlib.patches as mpatches
-from matplotlib.dates import DateFormatter, MonthLocator
 
 # Load Data
 @st.cache_data  # Updated cache function
@@ -49,14 +49,12 @@ if month != "All":
 if day != "All":
     data = data[data["DayOfWeek"] == day]
 
-
 # Dashboard Title
 st.title("Roni's Mac Bar Sales Dashboard")
 
 # Monthly Sales
 st.subheader("Monthly Sales")
 monthly_sales = data.groupby("Month")["Order ID"].nunique().sort_index()  # Use Order ID for counting
-# print(monthly_sales)
 
 # Define school months and non-school months
 school_months = ["August", "September", "October"]
@@ -66,66 +64,101 @@ non_school_months = ["April", "May", "June", "July"]
 average_sales_school_months = monthly_sales.loc[school_months].mean()
 average_sales_non_school_months = monthly_sales.loc[non_school_months].mean()
 
-if month != "All":
-    fig, ax = plt.subplots()
-    monthly_sales_single = monthly_sales.loc[[month]]
-    monthly_sales_single.plot(kind="bar", ax=ax)
-    ax.set_xlabel("Month")
-    ax.set_ylabel("Order ID")
-    ax.set_title(f"Monthly Sales for {month}")
-    st.pyplot(fig)
+# When "All" months are selected, show an interactive line chart for all months
+if month == "All":
+    fig = go.Figure()
 
-# When "All" months are selected, show a line chart for all months
+    # Add main line chart for monthly sales
+    fig.add_trace(go.Scatter(
+        x=monthly_sales.index,
+        y=monthly_sales.values,
+        mode='lines+markers',
+        name='Monthly Sales',
+        hovertemplate='Month: %{x}<br>Sales: %{y}<extra></extra>'
+    ))
+
+    # Add average lines for school and non-school months
+    fig.add_hline(y=average_sales_school_months, line_dash="dash", line_color="green",
+                  annotation_text=f"Avg School Months: {average_sales_school_months:.0f}", 
+                  annotation_position="top left")
+    fig.add_hline(y=average_sales_non_school_months, line_dash="dash", line_color="orange",
+                  annotation_text=f"Avg Non-School Months: {average_sales_non_school_months:.0f}",
+                  annotation_position="top right")
+
+    # Customize layout
+    fig.update_layout(
+        xaxis_title="Month",
+        yaxis_title="Order ID",
+        title="Monthly Sales Over Time",
+        showlegend=True
+    )
+    st.plotly_chart(fig)
 else:
-    fig, ax = plt.subplots()
-    # monthly_sales.plot(kind="line", ax=ax)
-    monthly_sales.plot(kind="line", ax=ax, marker='o', label="Monthly Sales")
-    
-    # Add trend lines for school and non-school months
-    ax.axhline(y=average_sales_school_months, color="green", linestyle="--", label=f"Average Sales (School Months): {average_sales_school_months:.0f}")
-    ax.axhline(y=average_sales_non_school_months, color="orange", linestyle="--", label=f"Average Sales (Non-School Months): {average_sales_non_school_months:.0f}")
-    
-    ax.set_xlabel("Month")
-    ax.set_ylabel("Order ID")
-    ax.set_title("Monthly Sales Over Time")
-    ax.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0.)
-    st.pyplot(fig)
-
+    # Display single month bar chart if a specific month is selected
+    fig = px.bar(
+        x=[month],
+        y=[monthly_sales.loc[month]],
+        labels={'x': 'Month', 'y': 'Order ID'},
+        title=f"Monthly Sales for {month}"
+    )
+    st.plotly_chart(fig)
 
 # 2. Top 10 Most Popular Items
 st.subheader("Top 10 Most Popular Options")
 top_10_items = data["Modifier"].value_counts().head(10)
-color_palette = sns.color_palette("Paired", len(top_10_items))  # "hsv" generates a colorful range
-fig, ax = plt.subplots()
-sns.barplot(x=top_10_items.values, y=top_10_items.index, palette=color_palette, ax=ax)
-ax.set_xlabel("Frequency")
-ax.set_ylabel("Modifier")
-legend_labels = top_10_items.index
-legend_patches = [mpatches.Patch(color=color_palette[i], label=legend_labels[i]) for i in range(len(legend_labels))]
-ax.legend(handles=legend_patches, title="Modifier", bbox_to_anchor=(1.05, 1), loc='upper left')
-st.pyplot(fig)
+
+# Use Plotly's px.bar and assign a different color to each bar
+fig = px.bar(
+    x=top_10_items.values,
+    y=top_10_items.index,
+    orientation='h',
+    labels={'x': 'Frequency', 'y': 'Modifier', 'color': 'Modifier'},
+    title="Top 10 Most Popular Options",
+    color=top_10_items.index,  # Set each bar color differently based on item
+    color_discrete_sequence=px.colors.qualitative.Plotly  # Use a diverse color palette
+)
+
+st.plotly_chart(fig)
+
 
 # Total Sales Over Time
 st.subheader("Total Sales Over Time")
 data["Sent Date"] = pd.to_datetime(data["Sent Date"], errors='coerce')
 sales_over_time = data.set_index("Sent Date").resample("D")["Order ID"].nunique()
-fig, ax = plt.subplots()
-sales_over_time.plot(kind="line", ax=ax)
-ax.set_xlabel("Date")
-ax.set_ylabel("Order ID")
-ax.xaxis.set_major_locator(MonthLocator())
-date_form = DateFormatter("%b")  # '%b' for abbreviated month only
-ax.xaxis.set_major_formatter(date_form)
-st.pyplot(fig)
+
+# Create a Plotly line chart for total sales over time
+fig = px.line(
+    sales_over_time,
+    labels={"value": "Order ID", "index": "Sent Date"},
+    title="Total Sales Over Time"
+)
+
+# Highlight Peak Day with an Annotation
+peak_date = sales_over_time.idxmax()
+peak_sales = sales_over_time.max()
+fig.add_annotation(
+    x=peak_date,
+    y=peak_sales,
+    text=f"Peak Sales: {peak_sales} on {peak_date.strftime('%b %d')}",
+    showarrow=True,
+    arrowhead=1,
+    ax=-10,
+    ay=-40
+)
+
+st.plotly_chart(fig)
+
 
 # Average Time of Day for Business
 st.subheader("Average Time of Day for Business")
 hourly_sales = data.groupby(data["Sent Date"].dt.hour)["Order #"].count()
-fig, ax = plt.subplots()
-hourly_sales.plot(kind="line", ax=ax)
-ax.set_xlabel("Hour")
-ax.set_ylabel("Order Count")
-st.pyplot(fig)
+fig = px.line(
+    x=hourly_sales.index,
+    y=hourly_sales.values,
+    labels={"x": "Hour", "y": "Order Count"},
+    title="Average Time of Day for Business"
+)
+st.plotly_chart(fig)
 
 # Display Key Insights
 st.sidebar.header("Key Insights")
@@ -143,6 +176,5 @@ avg_monthly_sales = monthly_sales.mean()
 st.sidebar.write(f"**Average Monthly Sales:** ${avg_monthly_sales:.0f}")
 
 # Top Selling Modifier
-top_10_items = data["Modifier"].value_counts().head(10)
 top_modifier = top_10_items.idxmax()
 st.sidebar.write(f"**Top Selling Modifier:** {top_modifier}")
